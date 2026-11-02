@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { postJson } from '../api.js'
 
 const TAG_LABELS = {
   Focus: 'Focus',
@@ -21,23 +22,18 @@ export default function StepIdeas({ state, onBack, onSelect, onSkip }) {
   const [selected, setSelected] = useState(null)
 
   useEffect(() => {
-    fetch('/api/ideas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        reflection1Option: state.reflection1Option,
-        reflection1: state.reflection1,
-        reflection2Option: state.reflection2Option,
-        reflection2: state.reflection2,
-        reflection3Option: state.reflection3Option,
-        reflection3: state.reflection3,
-        reflection4Option: state.reflection4Option,
-        reflection4: state.reflection4,
-        reflection5: state.reflection5,
-        reflection6: state.reflection6,
-      })
+    postJson('/api/ideas', {
+      reflection1Option: state.reflection1Option,
+      reflection1: state.reflection1,
+      reflection2Option: state.reflection2Option,
+      reflection2: state.reflection2,
+      reflection3Option: state.reflection3Option,
+      reflection3: state.reflection3,
+      reflection4Option: state.reflection4Option,
+      reflection4: state.reflection4,
+      reflection5: state.reflection5,
+      reflection6: state.reflection6,
     })
-      .then(r => r.json())
       .then(data => {
         if (data.error) throw new Error(data.error)
         setIdeas(data.ideas)

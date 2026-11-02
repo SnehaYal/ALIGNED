@@ -1,4 +1,15 @@
+import { useState } from 'react'
+import { getStoredKey, setStoredKey } from '../api.js'
+
 export default function Home({ onStart }) {
+  const [apiKey, setApiKey] = useState(getStoredKey())
+
+  function handleKeyChange(e) {
+    const value = e.target.value.trim()
+    setApiKey(value)
+    setStoredKey(value)
+  }
+
   return (
     <div id="home">
       <div className="home-inner">
@@ -31,6 +42,20 @@ export default function Home({ onStart }) {
             </div>
           </div>
         </div>
+
+        <label className="home-key">
+          <span className="home-key-label">Your Anthropic API key</span>
+          <input
+            className="home-key-input"
+            type="password"
+            placeholder="sk-ant-…  (optional if the server has one in .env)"
+            value={apiKey}
+            onChange={handleKeyChange}
+            autoComplete="off"
+            spellCheck={false}
+          />
+          <span className="home-key-hint">Saved only in this browser and sent straight to your local server.</span>
+        </label>
 
         <button className="home-start-btn" onClick={onStart}>
           Get started →

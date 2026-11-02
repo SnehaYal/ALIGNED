@@ -1,7 +1,9 @@
 {
-  "name": "widget-builder",
+  "name": "aligned-widget-builder",
   "type": "module",
   "version": "1.0.0",
+  "description": "ALIGNED — an AI widget builder that designs phone home-screen widgets around your real habits.",
+  "license": "MIT",
   "scripts": {
     "dev": "concurrently \"vite\" \"node server/index.js\"",
     "build": "vite build",

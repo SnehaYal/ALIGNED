@@ -5,9 +5,32 @@ import Anthropic from '@anthropic-ai/sdk';
 const app = express();
 app.use(express.json({ limit: '20mb' }));
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6';
+const PORT = process.env.PORT || 3001;
 
-console.log('Using Anthropic API (claude-sonnet-4-6)');
+// Bring-your-own-key: a key sent from the browser (x-anthropic-key) takes
+// priority; otherwise fall back to the key in .env.
+function clientFor(req) {
+  const apiKey = req.get('x-anthropic-key') || process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    const err = new Error('No Anthropic API key. Add one on the Home screen or set ANTHROPIC_API_KEY in .env.');
+    err.status = 401;
+    throw err;
+  }
+  return new Anthropic({ apiKey });
+}
+
+// Models sometimes wrap output in ``` fences despite instructions — strip them.
+function stripFences(text) {
+  return text.trim().replace(/^```[a-zA-Z]*\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
+}
+
+function sendError(res, label, err) {
+  console.error(`${label}:`, err);
+  res.status(err.status || 500).json({ error: err.message || `Failed: ${label}` });
+}
+
+console.log(`Using Anthropic model: ${MODEL}`);
 
 const SYSTEM_PROMPT = `You are an expert mobile UI/UX prototyper. Generate complete, self-contained HTML prototypes of phone UI screens and interactions.
 
@@ -45,7 +68,7 @@ SIZE GUIDELINES (when no phone shell is shown):
 - For phone-shell prototypes, default to 390×844px centered in the iframe.
 - Honor any custom size description literally (e.g. "half screen iPhone", "tablet landscape").`;
 
-async function generateWithAnthropic(prompt, sketchDataUrl) {
+async function generateWithAnthropic(anthropic, prompt, sketchDataUrl) {
   let messages;
   if (sketchDataUrl) {
     messages = [{
@@ -63,13 +86,13 @@ async function generateWithAnthropic(prompt, sketchDataUrl) {
   }
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: MODEL,
     max_tokens: 8192,
     system: SYSTEM_PROMPT,
     messages
   });
 
-  return response.content.map(b => b.text || '').join('');
+  return stripFences(response.content.map(b => b.text || '').join(''));
 }
 
 app.post('/api/generate', async (req, res) => {
@@ -110,12 +133,10 @@ app.post('/api/generate', async (req, res) => {
   prompt += `\n\nGenerate the complete widget HTML now.`;
 
   try {
-    const html = await generateWithAnthropic(prompt, sketchDataUrl);
-
+    const html = await generateWithAnthropic(clientFor(req), prompt, sketchDataUrl);
     res.json({ html });
   } catch (err) {
-    console.error('Generation error:', err);
-    res.status(500).json({ error: err.message || 'Failed to generate widget' });
+    sendError(res, 'Generation error', err);
   }
 });
 
@@ -154,18 +175,17 @@ Each of the 4 objects must have exactly these fields:
 }`;
 
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+    const response = await clientFor(req).messages.create({
+      model: MODEL,
       max_tokens: 1500,
       messages: [{ role: 'user', content: prompt }]
     });
 
-    const text = response.content.map(b => b.text || '').join('').trim();
+    const text = stripFences(response.content.map(b => b.text || '').join(''));
     const ideas = JSON.parse(text);
     res.json({ ideas });
   } catch (err) {
-    console.error('Ideas error:', err);
-    res.status(500).json({ error: err.message || 'Failed to generate ideas' });
+    sendError(res, 'Ideas error', err);
   }
 });
 
@@ -173,14 +193,13 @@ app.post('/api/refine', async (req, res) => {
   const { currentHtml, refinement } = req.body;
   const prompt = `Here is an existing HTML widget:\n\n${currentHtml}\n\nApply this change: ${refinement}\n\nReturn only the complete updated HTML.`;
   try {
-    const html = await generateWithAnthropic(prompt, null);
+    const html = await generateWithAnthropic(clientFor(req), prompt, null);
     res.json({ html });
   } catch (err) {
-    console.error('Refine error:', err);
-    res.status(500).json({ error: err.message || 'Failed to refine widget' });
+    sendError(res, 'Refine error', err);
   }
 });
 
-app.listen(3001, () => {
-  console.log('Widget Builder API server running on http://localhost:3001');
+app.listen(PORT, () => {
+  console.log(`ALIGNED API server running on http://localhost:${PORT}`);
 });
