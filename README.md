@@ -2,9 +2,9 @@
 
 **Phones are built around apps, not around the people using them.** ALIGNED is a framework and working tool that helps people design home-screen widgets around how their day actually goes, not around a template.
 
-> Thesis project · Interaction design + AI prototyping · React, Express, Claude API
+> MS thesis, Integrated Design & Media, NYU Tandon (May 2026) · **Sneha Yalavarti**
+> Interaction design + AI prototyping · React, Express, Claude API
 
-<!-- Replace with a hero GIF of the flow: docs/screenshots/hero.gif -->
 ![ALIGNED walkthrough](docs/screenshots/hero.gif)
 
 ---
@@ -14,6 +14,24 @@
 The information people need every day is spread across apps that don't talk to each other, so people end up doing the work of connecting it in their heads. Screen time grows, and "checking" turns into a habit.
 
 User research showed that the main frustration is **functional mismatch, not aesthetics**. People don't want prettier widgets. They want interfaces that fit how their lives are actually structured.
+
+## Research
+
+Twelve participants took part in three methods: semi-structured interviews, think-aloud widget-making workshops and post-workshop surveys.
+
+| | |
+|---|---|
+| **100%** | use widgets as part of their daily routine |
+| **100%** | were open to designing and deploying their own custom widgets |
+| **90%** | feel the widgets available to them don't fully fit their lifestyle and needs |
+| **80%+** | preferred combining text and sketch when directing an AI to build their interface |
+
+Four connected problems came out of the research, and each one feeds the next:
+
+1. **Mental model gap.** People don't know what custom widgets can do.
+2. **Discoverability failure.** Options exist, but people find them by accident, if at all.
+3. **Compounding effort.** Creating a widget means making many decisions with little support, so people give up.
+4. **Intent ≠ output.** Workshop participants ended up with widgets that didn't match what they set out to build.
 
 ## The ALIGNED framework
 
@@ -44,7 +62,6 @@ Over time, what a user builds is saved and maintained, so the work isn't lost wh
 
 ## Screenshots
 
-<!-- Drop images into docs/screenshots/ with these names -->
 | Reflect | Ideas | Sketch | Result |
 |---|---|---|---|
 | ![](docs/screenshots/reflect.png) | ![](docs/screenshots/ideas.png) | ![](docs/screenshots/sketch.png) | ![](docs/screenshots/result.png) |
